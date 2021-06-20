@@ -1,4 +1,6 @@
 import sys
+import time
+import numpy as np
 
 from typing import Optional
 from selenium import webdriver
@@ -20,8 +22,15 @@ def get_path_webdriver() -> str:
 
 def get_webdriver() -> Optional[webdriver.Chrome]:
     path_driver = get_path_webdriver()
-    driver = webdriver.Chrome(executable_path=path_driver)
-    return driver
+    webdriver_ = webdriver.Chrome(executable_path=path_driver)
+    return webdriver_
+
+
+def time_sleep() -> None:
+    wait = np.random.poisson(10)
+    if wait < 4:
+        wait = 12
+    time.sleep(wait)
 
 
 if __name__ == "__main__":

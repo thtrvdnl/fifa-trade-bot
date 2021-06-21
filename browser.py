@@ -1,4 +1,6 @@
 import utils
+import email
+import imaplib
 from typing import Optional
 
 from selenium import webdriver
@@ -24,7 +26,7 @@ class WebWorker:
     def _add_sequence_actions(self, element: Optional[str]) -> None:
         element = self.__driver.find_element_by_css_selector(element)
         self._actions.move_to_element(element)
-        utils.time_sleep()
+        utils.time_sleep(2)
         self._actions.click(element)
 
     def log_in(self) -> None:
@@ -33,15 +35,19 @@ class WebWorker:
             EC.invisibility_of_element((By.CLASS_NAME, "ut-login-content"))
         )
         print("Logging in...")
-        utils.time_sleep()
+        utils.time_sleep(2)
         self._add_sequence_actions(".ut-login .ut-login-content .btn-standard")
-        utils.time_sleep()
+        utils.time_sleep(2)
         self._actions.perform()
 
-    def start(self):
+    def email_authorization(self):
+        # TODO: проход почты
+
+    def start(self) -> None:
         self._set_url()
         self._set_action()
         self.log_in()
+        self.email_authorization()
 
 
 if __name__ == "__main__":

@@ -4,9 +4,13 @@ import email
 import imaplib
 import numpy as np
 
+
 from environs import Env
-from typing import Optional
+from email.message import Message
+from typing import Optional, Tuple
 from selenium import webdriver
+
+import excepts
 
 env = Env()
 env.read_env()
@@ -26,7 +30,7 @@ def get_path_webdriver() -> str:
     return path
 
 
-def get_webdriver() -> Optional[webdriver.Chrome]:
+def get_webdriver() -> webdriver.Chrome:
     path_driver = get_path_webdriver()
     webdriver_ = webdriver.Chrome(executable_path=path_driver)
     return webdriver_
@@ -35,13 +39,12 @@ def get_webdriver() -> Optional[webdriver.Chrome]:
 def time_sleep(wait: int) -> None:
     wait = np.random.poisson(wait)
     # TODO: сделать усеченное распределение
-    wait += (np.sqrt(wait) + np.log(wait))
     time.sleep(wait)
 
 
-def get_secure_code_by_mail() -> Optional[str]:
-    mail = imaplib.IMAP4_SSL(env.str('MAIL'))
-    mail.login(env.str('LOGIN'), env.str('PASSWORD'))
+def get_secure_code_by_mail() -> str:
+    mail = imaplib.IMAP4_SSL(env.str("MAIL"))
+    mail.login(env.str("LOGIN"), env.str("PASSWORD"))
 
     mail.select("inbox")
     result, data = mail.search(None, "ALL")
@@ -51,14 +54,25 @@ def get_secure_code_by_mail() -> Optional[str]:
 
     result, data = mail.fetch(latest_email_id, "(RFC822)")
     raw_email = data[0][1]
-    raw_email_string = raw_email.decode('utf-8')
+    raw_email_string = raw_email.decode("utf-8")
 
     email_message = email.message_from_string(raw_email_string)
-    body = email_message.get_payload(decode=True).decode('utf-8')
-    # TODO: Хардкод
-    secure_code = body.split('<span style="color: #000000;"><b>')[2].split('</b></span><br><br>')[0]
-    return secure_code
+    if sender_verification("EA", email_message):
+        body = email_message.get_payload(decode=True).decode("utf-8")
+        # TODO: Хардкод
+        secure_code = body.split('<span style="color: #000000;"><b>')[2].split(
+            "</b></span><br><br>"
+        )[0]
+        return secure_code
+
+
+def sender_verification(name: str, message: Message) -> bool:
+    senders = email.utils.parseaddr(message["From"])
+    for sender in senders:
+        if name not in sender:
+            raise excepts.SenderError
+    return True
 
 
 if __name__ == "__main__":
-    print(type(get_webdriver()))
+    print(get_secure_code_by_mail())

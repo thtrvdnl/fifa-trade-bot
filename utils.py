@@ -4,11 +4,11 @@ import email
 import imaplib
 import numpy as np
 
-
 from environs import Env
+from selenium import webdriver
 from email.message import Message
 from typing import Optional, Tuple
-from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 import excepts
 
@@ -30,9 +30,17 @@ def get_path_webdriver() -> str:
     return path
 
 
+def set_user_agent() -> Options:
+    options = Options()
+    user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+    options.add_argument(f"user-agent={user_agent}")
+    return options
+
+
 def get_webdriver() -> webdriver.Chrome:
+    options = set_user_agent()
     path_driver = get_path_webdriver()
-    webdriver_ = webdriver.Chrome(executable_path=path_driver)
+    webdriver_ = webdriver.Chrome(executable_path=path_driver, chrome_options=options)
     return webdriver_
 
 

@@ -1,7 +1,7 @@
 import utils
 import email
 import imaplib
-from typing import Optional
+from typing import Optional, Tuple
 
 from selenium import webdriver
 from selenium.webdriver import ActionChains
@@ -23,21 +23,26 @@ class WebWorker:
     def _set_action(self) -> None:
         self._actions = ActionChains(self.__driver)
 
-    def _add_sequence_actions(self, element: str) -> None:
-        element = self.__driver.find_element_by_css_selector(element)
+    def _check_element(self, timeout: int, element: Tuple[By, str]) -> None:
+        # Проверка на наличие html элемента
+        WebDriverWait(self.__driver, timeout).until_not(
+            EC.invisibility_of_element(element)
+        )
+
+    def _add_sequence_actions(self, element: Tuple[By, str]) -> None:
+        element = self.__driver.find_element(*element)
         self._actions.move_to_element(element)
         utils.time_sleep(2)
         self._actions.click(element)
+        utils.time_sleep(2)
 
     def log_in(self) -> None:
-        # Проверка на наличие класса
-        WebDriverWait(self.__driver, 60).until_not(
-            EC.invisibility_of_element((By.CLASS_NAME, "ut-login-content"))
-        )
         print("Logging in...")
+        self._check_element(60, (By.CLASS_NAME, "ut-login-content"))
         utils.time_sleep(2)
-        self._add_sequence_actions(".ut-login .ut-login-content .btn-standard")
-        utils.time_sleep(2)
+        self._add_sequence_actions(
+            (By.CSS_SELECTOR, ".ut-login .ut-login-content .btn-standard")
+        )
         self._actions.perform()
 
     def _sign_in_ea_account(self) -> None:
@@ -50,6 +55,7 @@ class WebWorker:
         self.__driver.find_element_by_id("btnLogin").click()
 
     def _login_verification(self) -> None:
+        utils.time_sleep(2)
         self.__driver.find_element_by_id("btnSendCode").click()
 
     def _security_code(self) -> None:
@@ -59,39 +65,56 @@ class WebWorker:
         self.__driver.find_element_by_id("btnSubmit").click()
 
     def email_authorization(self) -> None:
-        WebDriverWait(self.__driver, 60).until_not(
-            EC.invisibility_of_element((By.ID, "email-login-panel"))
-        )
+        self._check_element(60, (By.ID, "email-login-panel"))
         utils.time_sleep(2)
 
         self._sign_in_ea_account()
 
-        WebDriverWait(self.__driver, 30).until_not(
-            EC.invisibility_of_element((By.ID, "btnSendCode"))
-        )
+        self._check_element(30, (By.ID, "btnSendCode"))
         utils.time_sleep(2)
 
         self._login_verification()
 
-        WebDriverWait(self.__driver, 30).until_not(
-            EC.invisibility_of_element((By.CLASS_NAME, "panel-content"))
-        )
-        utils.time_sleep(2)
+        self._check_element(30, (By.CLASS_NAME, "panel-content"))
+        utils.time_sleep(30)
 
         self._security_code()
+        utils.time_sleep(60)
 
-    def check_update_message_in_fifa(self):
-        # TODO: Обход нормальный сделать
-        try:
-            live_message = self.__driver.find_element_by_class_name("ut-livemessage")
-        except Exception as exp:
-            print(exp)
+    # def check_update_message_in_fifa(self):
+    #     # TODO: Окно обновления фифы надо чтобы оно закрывалось если есть
+    #     try:
+    #         live_message = self.__driver.find_element_by_class_name("ut-livemessage")
+    #     except Exception as exp:
+    #         print(exp)
+
+    def _go_to_transfer_market(self) -> None:
+        utils.time_sleep(2)
+        # self.__driver.find_element_by_class_name("icon-transfer").click()
+        self._add_sequence_actions((By.CLASS_NAME, "icon-transfer"))
+        utils.time_sleep(2)
+
+    def _go_to_search_player_in_transfer_market(self):
+        # TODO: Ебучий action не видит элементов после проверки. Приходится тупым методом.
+        self._check_element(100, (By.CLASS_NAME, "icon-transfer"))
+        utils.time_sleep(3)
+
+        self._go_to_transfer_market()
+        self._actions.perform()
+
+        self._check_element(30, (By.CLASS_NAME, "tileContent"))
+        self.__driver.find_element_by_class_name("tileContent").click()
+        self._actions.perform()
+
+        self._check_element(30, (By.CLASS_NAME, "ut-text-input-control"))
+        utils.time_sleep(2)
 
     def start(self) -> None:
         self._set_url()
         self._set_action()
         self.log_in()
         self.email_authorization()
+        self._go_to_search_player_in_transfer_market()
 
 
 if __name__ == "__main__":

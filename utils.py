@@ -6,6 +6,7 @@ import numpy as np
 
 from environs import Env
 from selenium import webdriver
+from dataclasses import dataclass
 from email.message import Message
 from typing import Optional, Tuple
 from selenium.webdriver.chrome.options import Options
@@ -14,6 +15,18 @@ import excepts
 
 env = Env()
 env.read_env()
+
+
+@dataclass
+class Player:
+    name: str
+    quality: str
+    position: str
+    nationality: str
+    club: str
+    rarity: str
+    chemistry_style: str
+    league: str
 
 
 def get_operating_system() -> str:

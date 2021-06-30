@@ -81,17 +81,21 @@ class WebWorker:
         self._security_code()
         utils.time_sleep(60)
 
-    # def check_update_message_in_fifa(self):
-    #     # TODO: Окно обновления фифы надо чтобы оно закрывалось если есть
-    #     try:
-    #         live_message = self.__driver.find_element_by_class_name("ut-livemessage")
-    #     except Exception as exp:
-    #         print(exp)
+    def _check_update_message_in_fifa(self):
+        # TODO: Окно обновления фифы надо чтобы оно закрывалось если есть
+        utils.time_sleep(5)
+        try:
+            print('_check_update_message_in_fifa')
+            self.__driver.find_element_by_class_name("ut-livemessage-footer").click()
+            utils.time_sleep(3)
+            self.__driver.find_element_by_class_name("ut-livemessage-footer").click()
+        except Exception as exp:
+            print(exp)
 
     def _go_to_transfer_market(self) -> None:
         utils.time_sleep(2)
-        # self.__driver.find_element_by_class_name("icon-transfer").click()
-        self._add_sequence_actions((By.CLASS_NAME, "icon-transfer"))
+        self.__driver.find_element_by_class_name("icon-transfer").click()
+        # self._add_sequence_actions((By.CLASS_NAME, "icon-transfer"))
         utils.time_sleep(2)
 
     def _go_to_search_player_in_transfer_market(self):
@@ -100,20 +104,25 @@ class WebWorker:
         utils.time_sleep(3)
 
         self._go_to_transfer_market()
-        self._actions.perform()
+        # self._actions.perform()
 
-        self._check_element(30, (By.CLASS_NAME, "tileContent"))
+        # self._check_element(30, (By.CLASS_NAME, "tileContent"))
         self.__driver.find_element_by_class_name("tileContent").click()
-        self._actions.perform()
+        # self._actions.perform()
 
         self._check_element(30, (By.CLASS_NAME, "ut-text-input-control"))
         utils.time_sleep(2)
+
+    def accept_player(self, player: utils.Player):
+        # TODO: Джанго будет кидать игрока, которого надо мониторить
+        # надо состояние о мониторинге игрока
 
     def start(self) -> None:
         self._set_url()
         self._set_action()
         self.log_in()
         self.email_authorization()
+        self._check_update_message_in_fifa()
         self._go_to_search_player_in_transfer_market()
 
 

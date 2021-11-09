@@ -157,6 +157,7 @@ class WebWorker:
     #     html_params = player_params_element.get_attribute('innerHTML')
 
     def _find_element_in_transfer_market(self, element: str, many: bool = False) -> str:
+        print("element", element)
         self._check_element(10, (By.XPATH, f"//{element}"))
         if many:
             element = self.__driver.find_elements_by_xpath(f"//{element}")
@@ -252,7 +253,7 @@ class WebWorker:
 
     def _search_successful_buy(self) -> bool:
         try:
-            self._check_element(`5, (By.CLASS_NAME, "listFUTItem has-auction-data selected won"))
+            self._check_element(5, (By.CLASS_NAME, "listFUTItem has-auction-data selected won"))
             return True
         except TimeoutException:
             return False

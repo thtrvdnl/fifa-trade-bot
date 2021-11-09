@@ -7,7 +7,7 @@ from aiogram import Bot, Dispatcher
 webdriver = utils.get_webdriver()
 web_bot = browser.WebWorker(webdriver)
 
-API_TOKEN = '1965724449:AAEzNT_wqGaWZ886pKSBPaN05M9yjyucDcQ'
+API_TOKEN = utils.env.str("TOKEN")
 
 # Configure logging
 logging.basicConfig(

@@ -190,7 +190,8 @@ class WebWorker:
         player_name = self._find_element_in_transfer_market("input[@placeholder='Type Player Name']")
         player_buy_fields = self._find_element_in_transfer_market("input[@placeholder='Any']", many=True)
 
-        player_name.send_keys(player.name)
+        if player.name != '':
+            player_name.send_keys(player.name)
         self._find_element_in_transfer_market(f"span[text()='{player.name}']").click()
 
         for param in player_params:
@@ -274,8 +275,9 @@ class WebWorker:
         element_button_ok = self._find_element_in_transfer_market("span[text()='Ok']")
         element_button_ok.click()
 
-        button_send_to_transfer_list = self._find_element_in_transfer_market("span[text()='Send to Transfer List']")
-        button_send_to_transfer_list.click()
+        if self._search_successful_buy():
+            button_send_to_transfer_list = self._find_element_in_transfer_market("span[text()='Send to Transfer List']")
+            button_send_to_transfer_list.click()
 
         print("count_buy_player", count_buy_player)
 

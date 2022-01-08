@@ -212,26 +212,13 @@ class WebWorker:
 
     @utils.print_func
     def _search_no_results(self) -> bool:
-        # try:
-        #     self._check_element(120, (By.XPATH, f"//h2[text()='No results found']"))
-        #     return True
-        # except TimeoutException:
-        #     return False
         time_ = time.time()
         try:
-            #time.sleep(1)
             self._check_element(1, (By.CLASS_NAME, "entityContainer"))
             return False
         except TimeoutException:
             print(f"TimeoutException {time.time()-time_}")
             return True
-        #time.sleep(1)
-        #if len(WebDriverWait(self.__driver, 2).until_not(
-        #    EC.invisibility_of_element((By.CLASS_NAME, "entityContainer"))
-        # )) == 0:
-        #   return True
-        #return False
-
 
     def _come_back(self) -> None:
         #utils.time_sleep(1)
@@ -271,37 +258,30 @@ class WebWorker:
         time1 = time.time()
         li_list_players = self.__driver.find_elements_by_class_name("entityContainer")
         print("li_list_players", li_list_players)
-        for player in li_list_players:
-            time2 = time.time()
-            print(player)
-            player.click()
-            self._check_element(30, (By.CSS_SELECTOR, "button.btn-standard.buyButton.currency-coins"))
-            button_buy_player_now = self.__driver.find_element_by_css_selector(
-                "button.btn-standard.buyButton.currency-coins")
-            print("button_list_players", button_buy_player_now)
-            button_buy_player_now.click()
-            print(f"===BUY TIME=== time1:{time.time()-time1} time2{time.time()-time2}")
-            # if self._find_element_in_transfer_market("")
-            self._check_element(10, (By.XPATH, "//span[text()='Ok']"))
-            element_button_ok = self._find_element_in_transfer_market("span[text()='Ok']")
-            element_button_ok.click()
-            if self._search_no_results():
-                self._come_back()
-                self._change_price(delta_price)
+        player = li_list_players[0]
+        time2 = time.time()
+        print(player)
+        player.click()
 
-            if self._search_notification_negative():
-                continue
+        self._check_element(30, (By.CSS_SELECTOR, "button.btn-standard.buyButton.currency-coins"))
+        button_buy_player_now = self.__driver.find_element_by_css_selector(
+            "button.btn-standard.buyButton.currency-coins")
+        print("button_list_players", button_buy_player_now)
+        button_buy_player_now.click()
+        print(f"===BUY TIME=== time1:{time.time()-time1} time2{time.time()-time2}")
 
-            if self._search_successful_buy():
-                count_buy_player += 1
+        self._check_element(10, (By.XPATH, "//span[text()='Ok']"))
+        element_button_ok = self._find_element_in_transfer_market("span[text()='Ok']")
+        element_button_ok.click()
 
-            if count_buy_player == player_numbers:
-                break
-            print("count_buy_player", count_buy_player)
+        button_send_to_transfer_list = self._find_element_in_transfer_market("span[text()='Send to Transfer List']")
+        button_send_to_transfer_list.click()
+
+        print("count_buy_player", count_buy_player)
 
     @utils.print_func
     def buy_players(self, player: utils.Player) -> str:
-        count_buy_player = 1
+        count_buy_player = 0
         # нужно для обновления игроков
         delta_price = 150
         self.find_player(player)

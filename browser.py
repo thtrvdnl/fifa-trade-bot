@@ -217,18 +217,26 @@ class WebWorker:
         #     return True
         # except TimeoutException:
         #     return False
+        time_ = time.time()
         try:
-            time.sleep(2)
-            self._check_element(4, (By.CLASS_NAME, "entityContainer"))
+            #time.sleep(1)
+            self._check_element(1, (By.CLASS_NAME, "entityContainer"))
             return False
         except TimeoutException:
-            print("TimeoutException")
+            print(f"TimeoutException {time.time()-time_}")
             return True
+        #time.sleep(1)
+        #if len(WebDriverWait(self.__driver, 2).until_not(
+        #    EC.invisibility_of_element((By.CLASS_NAME, "entityContainer"))
+        # )) == 0:
+        #   return True
+        #return False
+
 
     def _come_back(self) -> None:
-        utils.time_sleep(1)
+        #utils.time_sleep(1)
         self.__driver.find_element_by_class_name("ut-navigation-button-control").click()
-        utils.time_sleep(1)
+        #utils.time_sleep(1)
 
     def _change_price(self, delta_price: int) -> None:
         bid_now_price_min: int = delta_price
@@ -239,7 +247,7 @@ class WebWorker:
 
         utils.time_sleep(2)
         bid_price_min.send_keys(Keys.DELETE)
-        time.sleep(2)
+        time.sleep(1)
         print("bid_now_price_min", bid_now_price_min)
         bid_price_min.send_keys(bid_now_price_min)
         self._click_transfer_button("Search")
@@ -260,9 +268,11 @@ class WebWorker:
 
     @utils.print_func
     def _buy_players(self, count_buy_player: int, delta_price: int, player_numbers: str) -> None:
+        time1 = time.time()
         li_list_players = self.__driver.find_elements_by_class_name("entityContainer")
         print("li_list_players", li_list_players)
         for player in li_list_players:
+            time2 = time.time()
             print(player)
             player.click()
             self._check_element(30, (By.CSS_SELECTOR, "button.btn-standard.buyButton.currency-coins"))
@@ -270,6 +280,7 @@ class WebWorker:
                 "button.btn-standard.buyButton.currency-coins")
             print("button_list_players", button_buy_player_now)
             button_buy_player_now.click()
+            print(f"===BUY TIME=== time1:{time.time()-time1} time2{time.time()-time2}")
             # if self._find_element_in_transfer_market("")
             self._check_element(10, (By.XPATH, "//span[text()='Ok']"))
             element_button_ok = self._find_element_in_transfer_market("span[text()='Ok']")
@@ -297,12 +308,13 @@ class WebWorker:
         while count_buy_player < int(player.numbers):
             print("count_buy_player while", count_buy_player)
             print("find_player")
+            time_ = time.time()
             if self._search_no_results():
                 print("_search_no_results True")
                 self._come_back()
                 self._change_price(delta_price)
             else:
-                print("buy_players:else")
+                print(f"buy_players:else {time.time()-time_}")
                 self._buy_players(count_buy_player, delta_price, player.numbers)
                 print("buy_players:else1")
                 self._come_back()

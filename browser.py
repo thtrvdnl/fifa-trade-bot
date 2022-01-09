@@ -156,7 +156,7 @@ class WebWorker:
     #
     #     html_params = player_params_element.get_attribute('innerHTML')
 
-    def _find_element_in_transfer_market(self, element: str, many: bool = False) -> str:
+    def _find_element_in_transfer_market(self, element: str, many: bool = False) -> Union[str, list]:
         print("element", element)
         self._check_element(10, (By.XPATH, f"//{element}"))
         if many:
@@ -190,9 +190,9 @@ class WebWorker:
         player_name = self._find_element_in_transfer_market("input[@placeholder='Type Player Name']")
         player_buy_fields = self._find_element_in_transfer_market("input[@placeholder='Any']", many=True)
 
-        if player.name != '':
+        if player.name != ' ':
             player_name.send_keys(player.name)
-        self._find_element_in_transfer_market(f"span[text()='{player.name}']").click()
+            self._find_element_in_transfer_market(f"span[text()='{player.name}']").click()
 
         for param in player_params:
             check_param = self.check_param_in_player_msg(player, param)
@@ -218,17 +218,25 @@ class WebWorker:
             self._check_element(1, (By.CLASS_NAME, "entityContainer"))
             return False
         except TimeoutException:
-            print(f"TimeoutException {time.time()-time_}")
+            print(f"TimeoutException {time.time() - time_}")
             return True
 
     def _come_back(self) -> None:
-        #utils.time_sleep(1)
+        # utils.time_sleep(1)
         self.__driver.find_element_by_class_name("ut-navigation-button-control").click()
-        #utils.time_sleep(1)
+        # utils.time_sleep(1)
 
-    def _change_price(self, delta_price: int) -> None:
+    def _check_price(self, player: utils.Player, prices: list):
+        for price, player_price in zip(prices, (player.get_prices("bid_price") + player.get_prices("buy_now_price"))):
+            if int(price.get_attribute("value")) != int(player_price):
+                price.send_keys(Keys.DELETE)
+                time.sleep(2)
+                price.send_keys(player_price)
+
+    def _change_price(self, delta_price: int, player: utils.Player) -> None:
         bid_now_price_min: int = delta_price
-        bid_price_min = self._find_element_in_transfer_market("input[@placeholder='Any']", many=True)[0]
+        prices = self._find_element_in_transfer_market("input[@placeholder='Any']", many=True)
+        bid_price_min, buy_now_price = prices[0], prices[3]
         old_bid_price_min = int(bid_price_min.get_attribute("value"))
         if old_bid_price_min == delta_price:
             bid_now_price_min += 50
@@ -238,6 +246,8 @@ class WebWorker:
         time.sleep(1)
         print("bid_now_price_min", bid_now_price_min)
         bid_price_min.send_keys(bid_now_price_min)
+
+        self._check_price(player, prices)
         self._click_transfer_button("Search")
 
     def _search_notification_negative(self) -> bool:
@@ -269,7 +279,7 @@ class WebWorker:
             "button.btn-standard.buyButton.currency-coins")
         print("button_list_players", button_buy_player_now)
         button_buy_player_now.click()
-        print(f"===BUY TIME=== time1:{time.time()-time1} time2{time.time()-time2}")
+        print(f"===BUY TIME=== time1:{time.time() - time1} time2{time.time() - time2}")
 
         self._check_element(10, (By.XPATH, "//span[text()='Ok']"))
         element_button_ok = self._find_element_in_transfer_market("span[text()='Ok']")
@@ -294,13 +304,13 @@ class WebWorker:
             if self._search_no_results():
                 print("_search_no_results True")
                 self._come_back()
-                self._change_price(delta_price)
+                self._change_price(delta_price, player)
             else:
-                print(f"buy_players:else {time.time()-time_}")
+                print(f"buy_players:else {time.time() - time_}")
                 self._buy_players(count_buy_player, delta_price, player.numbers)
                 print("buy_players:else1")
                 self._come_back()
-                self._change_price(delta_price)
+                self._change_price(delta_price, player)
         self._click_transfer_button("Reset")
         return "Done"
 
